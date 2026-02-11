@@ -4,7 +4,12 @@ info:
   version: "1.0.0"
   description: |
     Klar API documentation (public excerpt).
-    Authentication uses JWT Bearer tokens in the Authorization header.
+
+    ## Authentication
+    Most API endpoints require JWT (JSON Web Token) authentication.
+    Include the token in the Authorization header:
+
+    `Authorization: Bearer <your_jwt_token>`
 
 servers:
   - url: https://your-domain.com
@@ -12,6 +17,11 @@ servers:
 
 tags:
   - name: Auth
+    description: |
+      Most API endpoints require JWT (JSON Web Token) authentication.
+      Include the token in the Authorization header:
+
+      `Authorization: Bearer <your_jwt_token>`
   - name: Words
   - name: Stats
   - name: Categories
