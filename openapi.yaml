@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  title: Klar Public API
+  version: "1.0.0"
+  description: |
+    Klar API documentation (public excerpt).
+    Authentication uses JWT Bearer tokens in the Authorization header.
+
+servers:
+  - url: https://your-domain.com
+    description: Production
+
+tags:
+  - name: Auth
+  - name: Words
+  - name: Stats
+  - name: Categories
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DailyWordsResponse:
+      type: object
+      required: [words, session_date, due_count, new_count, total_count]
+      properties:
+        words:
+          type: array
+          description: Word objects (omitted in this excerpt).
+          items:
+            type: object
+            additionalProperties: true
+        session_date:
+          type: string
+          format: date
+          example: "2024-12-18"
+        due_count:
+          type: integer
+          example: 23
+        new_count:
+          type: integer
+          example: 10
+        total_count:
+          type: integer
+          example: 33
+
+    ReviewRequest:
+      type: object
+      required: [word_id, rating]
+      properties:
+        word_id:
+          type: integer
+          example: 123
+        rating:
+          type: integer
+          description: 1=Again, 2=Hard, 3=Good, 4=Easy
+          enum: [1, 2, 3, 4]
+          example: 3
+
+    ReviewResponse:
+      type: object
+      required: [success, scheduling]
+      properties:
+        success:
+          type: boolean
+          example: true
+        scheduling:
+          type: object
+          required: [state, due_date, scheduled_days]
+          properties:
+            state:
+              type: string
+              example: "review"
+            due_date:
+              type: string
+              format: date-time
+              example: "2024-12-25T10:30:00Z"
+            scheduled_days:
+              type: integer
+              example: 7
+
+paths:
+  /api/words/batch:
+    post:
+      tags: [Words]
+      summary: Get random word batch
+      description: Public endpoint (no authentication required).
+      responses:
+        "200":
+          description: OK
+
+  /api/stats:
+    get:
+      tags: [Stats]
+      summary: Database statistics
+      description: Public endpoint (no authentication required).
+      responses:
+        "200":
+          description: OK
+
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: Word categories
+      description: Public endpoint (no authentication required).
+      responses:
+        "200":
+          description: OK
+
+  /api/words/daily:
+    get:
+      tags: [Words]
+      summary: Personalized daily practice session
+      description: Get today's adaptive learning session tailored to user progress.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyWordsResponse"
+        "401":
+          description: Unauthorized
+
+  /api/words/review:
+    post:
+      tags: [Words]
+      summary: Submit review with FSRS rating
+      description: |
+        Submit a review rating for a word. User identity is derived from the JWT.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewResponse"
+        "401":
+          description: Unauthorized
